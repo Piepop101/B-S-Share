@@ -1,0 +1,58 @@
+using System;
+using ThunderRoad;
+using UnityEngine;
+
+namespace FlyingAnim
+{
+    // ReSharper disable once UnusedType.Global
+    public class Anim : ItemModule
+    {
+        public string animationName;
+        // ReSharper disable once ParameterHidesMember
+        public override void OnItemLoaded(Item item)
+        {
+            base.OnItemLoaded(item);
+            item.gameObject.AddComponent<ItemFlyingAnimation>();
+        }
+    }
+    // ReSharper disable once InconsistentNaming
+    public class ItemFlyingAnimation : MonoBehaviour
+    {
+        private Item _item;
+        private Anim _module;
+        private UnityEngine.Animation _animation;
+
+        private void Start()
+        {
+            try
+            {
+                _item = GetComponent<Item>();
+                _module = _item.data.GetModule<Anim>();
+                _animation = _item.GetComponentInChildren<UnityEngine.Animation>();
+                _item.mainCollisionHandler.OnCollisionStartEvent += MainCollisionHandlerOnOnCollisionStartEvent;
+                _item.OnFlyStartEvent += ItemOnOnFlyStartEvent;
+                _item.OnGrabEvent += ItemOnOnGrabEvent;
+            }
+            catch (Exception exception)
+            {
+                Debug.Log("item flying animation exception");
+                Debug.Log(exception.Message);
+            }
+        }
+
+        private void ItemOnOnGrabEvent(Handle handle, RagdollHand ragdollhand)
+        {
+            _animation.Stop();
+        }
+
+        private void ItemOnOnFlyStartEvent()
+        {
+            _animation.Play(_module.animationName);
+        }
+
+        private void MainCollisionHandlerOnOnCollisionStartEvent(ref CollisionStruct collisioninstance)
+        {
+            _animation.Stop();
+        }
+    }
+}
